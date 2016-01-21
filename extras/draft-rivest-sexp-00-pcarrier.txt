@@ -385,7 +385,7 @@ Here are some examples of display-hints:
 
 In applications an octet-string that is untyped may be considered to have
 a pre-specified "default" mime type.  The mime type
-		"text/plain; charset=iso-8859-1"
+		"text/plain; charset=utf-8"
 is the standard default.
 
 
