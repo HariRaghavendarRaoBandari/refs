@@ -47,7 +47,7 @@ S-expressions.  Here is a sample S-expression:
 
 	(snicker "abc" (#03# |YWJj|))
 
-It is a list of length three: 
+It is a list of length three:
 
 	-- the octet-string "snicker"
 
@@ -65,7 +65,7 @@ Here are the design goals for S-expressions:
   -- generality: S-expressions should be good at representing arbitrary
      data.
 
-  -- readability: it should be easy for someone to examine and 
+  -- readability: it should be easy for someone to examine and
      understand the structure of an S-expression.
 
   -- economy: S-expressions should represent data compactly.
@@ -77,7 +77,7 @@ Here are the design goals for S-expressions:
   -- flexibility: S-expressions should make it relatively simple to
      modify and extend data structures.
 
-  -- canonicalization: it should be easy to produce a unique 
+  -- canonicalization: it should be easy to produce a unique
      "canonical" form of an S-expression, for digital signature purposes.
 
   -- efficiency: S-expressions should admit in-memory representations
@@ -148,7 +148,7 @@ These need not be different; in this proposal the canonical encoding
 is the same as the transport encoding, for example.  In this note we
 propose (related) encoding techniques for each of these uses.
 
-3. Character set 
+3. Character set
 
 We will be describing encodings of S-expressions.  Except when giving
 "verbatim" encodings, the character set used is limited to the following
@@ -179,7 +179,7 @@ characters in US-ASCII:
 			& ampersand
 			\ backslash
 	The following characters are unused and unavailable, except in
-	"verbatim" encodings:
+	"verbatim" encodings and quoted strings:
 			! exclamation point
 			% percent
 			^ circumflex
@@ -205,7 +205,7 @@ that the octet-string may have length zero.
 
 A verbatim encoding of an octet string consists of four parts:
 
-	-- the length (number of octets) of the octet-string, 
+	-- the length (number of octets) of the octet-string,
 	   given in decimal most significant digit first, with
 	   no leading zeros.
 
@@ -239,14 +239,12 @@ The quoted-string representation of an octet-string consists of:
 	-- a final double-quote (")
 
 The specified length is the length of the resulting string after any
-escape sequences have been handled.  The string does not have any
-"terminating NULL" that C includes, and the length does not count such
-a character.
+escape sequences have been handled.
 
 The length is optional.
 
 The escape conventions within the quoted string are as follows (these follow
-the "C" programming language conventions, with an extension for 
+the "C" programming language conventions, with an extension for
 ignoring line terminators of just LF or CRLF):
 	\b		-- backspace
 	\t		-- horizontal tab
@@ -277,7 +275,7 @@ Here are some examples of quoted-string encodings:
 	one."
 	""
 
-4.3 Token representation 
+4.3 Token representation
 
 An octet string that meets the following conditions may be given
 directly as a "token".
@@ -288,7 +286,7 @@ directly as a "token".
 		-- alphabetic (upper or lower case),
 		-- numeric, or
 		-- one of the eight "pseudo-alphabetic" punctuation marks:
-			-   .   /   _   :  *  +  =  
+			-   .   /   _   :  *  +  =
 	(Note: upper and lower case are not equivalent.)
 	(Note: A token may begin with punctuation, including ":").
 
@@ -335,12 +333,12 @@ An octet-string may be represented in a base-64 coding consisting of:
 
 	-- a vertical bar "|"
 
-	-- the rfc 1521 base-64 encoding of the octet string.  
+	-- the rfc 1521 base-64 encoding of the octet string.
 
 	-- a final vertical bar "|"
 
-The base-64 encoding uses only the characters 
-	A-Z  a-z  0-9  +  /  = 
+The base-64 encoding uses only the characters
+	A-Z  a-z  0-9  +  /  =
 It produces four characters of output for each three octets of input.
 If the input has one or two left-over octets of input, it produces an
 output block of length four ending in two or one equals signs, respectively.
@@ -350,7 +348,7 @@ dropped.
 
 There may be whitespace inserted in the midst of the base-64 encoding
 arbitrarily; it is ignored.  It is an error to have characters other
-than whitespace and base-64 characters.  
+than whitespace and base-64 characters.
 
 Here are some examples of base-64 encodings:
 
@@ -387,7 +385,7 @@ Here are some examples of display-hints:
 
 In applications an octet-string that is untyped may be considered to have
 a pre-specified "default" mime type.  The mime type
-		"text/plain; charset=iso-8859-1" 
+		"text/plain; charset=iso-8859-1"
 is the standard default.
 
 
@@ -426,7 +424,7 @@ Here are some examples of encodings of lists:
 
 6. Representation types
 
-There are three "types" of representations: 
+There are three "types" of representations:
 
 	-- canonical
 
@@ -504,51 +502,52 @@ omitted lengths, and so on.
 We give separate BNF's for canonical and advanced forms of S-expressions.
 We use the following notation:
 	<x>* 		means 0 or more occurrences of <x>
-	<x>+		means 1 or more occurrences of <x>  
+	<x>+		means 1 or more occurrences of <x>
 	<x>?		means 0 or 1 occurrences of <x>
 	parentheses	are used for grouping, as in (<x> | <y>)*
 
 For canonical and basic transport:
 
-<sexpr>    	:: <string> | <list>
-<string>   	:: <display>? <simple-string> ;
-<simple-string>	:: <raw> ;
-<display>  	:: "[" <simple-string> "]" ;
-<raw>      	:: <decimal> ":" <bytes> ;
-<decimal>  	:: <decimal-digit>+ ;
-		-- decimal numbers should have no unnecessary leading zeros
-<bytes> 	-- any string of bytes, of the indicated length
-<list>     	:: "(" <sexp>* ")" ;
-<decimal-digit> :: "0" | ... | "9" ;
+<sexpr>              :: <string> | <list>
+<string>             :: <display>? <simple-string> ;
+<simple-string>      :: <raw> ;
+<display>            :: "[" <simple-string> "]" ;
+<raw>                :: <decimal> ":" <bytes> ;
+<decimal>            :: <decimal-digit-1> <decimal-digit>* ;
+<bytes> 	     -- any string of bytes, of the indicated length
+<list>               :: "(" <sexp>* ")" ;
+<decimal-digit-1>    :: "1" | ... | "9" ;
+<decimal-digit>      :: "0" | ... | "9" ;
 
 For advanced transport:
 
-<sexpr>    	:: <string> | <list>
-<string>   	:: <display>? <simple-string> ;
-<simple-string>	:: <raw> | <token> | <base-64> | <hexadecimal> | 
-		           <quoted-string> ;
-<display>  	:: "[" <simple-string> "]" ;
-<raw>      	:: <decimal> ":" <bytes> ;
-<decimal>  	:: <decimal-digit>+ ;
-		-- decimal numbers should have no unnecessary leading zeros
-<bytes> 	-- any string of bytes, of the indicated length
-<token>    	:: <tokenchar>+ ;
-<base-64>  	:: <decimal>? "|" ( <base-64-char> | <whitespace> )* "|" ;
-<hexadecimal>   :: "#" ( <hex-digit> | <white-space> )* "#" ;
-<quoted-string> :: <decimal>? <quoted-string-body>  
+<sexpr>              :: <string> | <list>
+<string>             :: <display>? <simple-string> ;
+<simple-string>      :: <raw> | <token> | <base-64> | <hexadecimal> |
+		        <quoted-string> ;
+<display>            :: "[" <simple-string> "]" ;
+<raw>                :: <decimal> ":" <bytes> ;
+<decimal>            :: <decimal-digit-1> <decimal-digit>+ ;
+<bytes>              -- any string of bytes, of the indicated length
+<token>              :: <token-char-1> <token-char>* ;
+<base-64>            :: <decimal>? "|" ( <base-64-char> | <whitespace> )* "|" ;
+<hexadecimal>        :: "#" ( <hex-digit> | <white-space> )* "#" ;
+<quoted-string>      :: <decimal>? <quoted-string-body>
 <quoted-string-body> :: "\"" <bytes> "\""
-<list>     	:: "(" ( <sexp> | <whitespace> )* ")" ;
-<whitespace> 	:: <whitespace-char>* ;
-<token-char>  	:: <alpha> | <decimal-digit> | <simple-punc> ;
-<alpha>       	:: <upper-case> | <lower-case> | <digit> ;
-<lower-case>  	:: "a" | ... | "z" ;
-<upper-case>  	:: "A" | ... | "Z" ;
-<decimal-digit> :: "0" | ... | "9" ;
-<hex-digit>     :: <decimal-digit> | "A" | ... | "F" | "a" | ... | "f" ;
-<simple-punc> 	:: "-" | "." | "/" | "_" | ":" | "*" | "+" | "=" ;
-<whitespace-char> :: " " | "\t" | "\r" | "\n" ;
-<base-64-char> 	:: <alpha> | <decimal-digit> | "+" | "/" | "=" ;
-<null>        	:: "" ;
+<list>               :: "(" ( <sexp> | <whitespace> )* ")" ;
+<whitespace>         :: <whitespace-char>* ;
+<token-char-1>       :: <alpha> | <decimal-digit> | <simple-punc> ;
+<token-char>         :: <alpha> | <decimal-digit> | <simple-punc> ;
+<alpha>              :: <upper-case> | <lower-case> | <digit> ;
+<lower-case>         :: "a" | ... | "z" ;
+<upper-case>         :: "A" | ... | "Z" ;
+<decimal-digit-1>    :: "1" | ... | "9" ;
+<decimal-digit>      :: "0" | ... | "9" ;
+<hex-digit>          :: <decimal-digit> | "A" | ... | "F" | "a" | ... | "f" ;
+<simple-punc>        :: "-" | "." | "/" | "_" | ":" | "*" | "+" | "=" ;
+<whitespace-char>    :: " " | "\t" | "\r" | "\n" ;
+<base-64-char>       :: <alpha> | <decimal-digit> | "+" | "/" | "=" ;
+<null>               :: "" ;
 
 8. In-memory representations
 
@@ -615,9 +614,9 @@ This is represented as follows:
 	  01 <length> <octet-string>    /* for display-type */
 	  01 <length> <octet-string>    /* for octet-string */
 
-For example, the S-expression 
+For example, the S-expression
 	
-	[gif] #61626364# 
+	[gif] #61626364#
 
 would be represented as (with k = 2)
 
@@ -635,7 +634,7 @@ For example, the list (abc [d]ef (g)) is represented in memory as (with k=2)
 
 	03 001b
 	  01 0003 a b c
-          02 0009 
+          02 0009
             01 0001 d
             01 0002 e f
           03 0005
@@ -646,7 +645,7 @@ For example, the list (abc [d]ef (g)) is represented in memory as (with k=2)
 9. Code
 
 There is code available for reading and parsing the various
-S-expression formats proposed here.  
+S-expression formats proposed here.
 
 See http://theory.lcs.mit.edu/~rivest/sexp.html
 
@@ -677,7 +676,7 @@ and flexible than, Bernstein's "net-strings" [BERN].
 
 12. References
 
-[SDSI] "A Simple Distributed Security Architecture", by 
+[SDSI] "A Simple Distributed Security Architecture", by
         Butler Lampson, and Ronald L. Rivest
 	http://theory.lcs.mit.edu/~cis/sdsi.html
 
